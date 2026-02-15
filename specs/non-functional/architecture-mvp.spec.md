@@ -32,27 +32,35 @@ Migrate to the full architecture (see `architecture.spec.md`) when:
 All MVP systems must use the following technology stack. These choices are fixed for consistency and simplicity.
 
 ### 2.1 Core Technologies
-- **Markup**: HTML5 (semantic HTML)
-- **Styling**: CSS3 (modern CSS with custom properties)
-- **Scripting**: Vanilla JavaScript (ES2022+)
-- **Component Model**: Web Components (Custom Elements v1)
-- **Module System**: ES Modules (native browser imports)
+- **Framework**: React 18+
+- **Language**: TypeScript 5+
+- **Build Tool**: Vite
+- **Styling**: CSS3 with CSS Modules or styled-components
+- **Module System**: ES Modules
 
 ### 2.2 Development Tools
 - **Version Control**: Git (GitHub)
-- **Code Editor**: Any modern editor (VS Code recommended)
+- **Code Editor**: VS Code recommended (with TypeScript support)
 - **Browser Testing**: Modern evergreen browsers (Chrome, Firefox, Edge, Safari)
-- **Testing Framework**: Vitest or Jest (for business logic)
-- **Linting**: ESLint (JavaScript), Stylelint (CSS)
+- **Testing Framework**: Vitest (for unit/integration tests)
+- **Testing Library**: React Testing Library
+- **Linting**: ESLint (TypeScript/React rules)
+- **Type Checking**: TypeScript compiler
 - **Formatting**: Prettier
 
-### 2.3 Forbidden Dependencies
-- **No Frameworks**: No React, Vue, Angular, Svelte, etc.
-- **No Backend**: No Node.js server, no API calls to custom backends
-- **No Build Tools Required**: Optional bundlers allowed (Vite, Rollup) but not mandatory
-- **No CSS Frameworks**: No Bootstrap, Tailwind, Material UI (custom CSS only)
+### 2.3 Permitted Dependencies
+- **React Router**: For client-side routing (if needed)
+- **Utility Libraries**: Small focused libraries (e.g., date-fns, zod for validation)
+- **UI Libraries**: Headless UI libraries allowed (e.g., Radix UI)
+- **Chart Libraries**: For data visualization (e.g., recharts, chart.js)
 
-**Exception**: Small utility libraries are permitted for specific needs (e.g., date formatting, charts) but must be justified and minimal.
+### 2.4 Forbidden Dependencies
+- **No Backend**: No Node.js server, no API calls to custom backends
+- **No Heavy Frameworks**: No Next.js, Remix, Gatsby (Vite + React only)
+- **No CSS Frameworks**: No Bootstrap, Tailwind, Material UI (custom CSS only)
+- **No State Management Libraries**: No Redux, MobX, Zustand (use React Context/hooks)
+
+**Principle**: Keep dependencies minimal and justify each addition.
 
 ---
 
@@ -64,35 +72,44 @@ All MVP applications must follow this directory structure:
 
 ```
 /mvp-app-name/
-├── index.html              # Main entry point
+├── index.html              # Vite entry point
 ├── README.md               # Application documentation
+├── package.json            # Dependencies and scripts
+├── tsconfig.json           # TypeScript configuration
+├── vite.config.ts          # Vite configuration
 ├── src/
-│   ├── components/         # Web Components
-│   │   ├── component-name/
-│   │   │   ├── component-name.js
-│   │   │   ├── component-name.css
-│   │   │   └── README.md   # Component usage docs
+│   ├── main.tsx            # Application entry point
+│   ├── App.tsx             # Root component
+│   ├── components/         # React components
+│   │   ├── ComponentName/
+│   │   │   ├── ComponentName.tsx
+│   │   │   ├── ComponentName.module.css
+│   │   │   ├── ComponentName.test.tsx
+│   │   │   └── index.ts    # Re-export
 │   ├── services/           # Business logic layer
-│   │   ├── calculator-service.js
-│   │   └── validation-service.js
-│   ├── models/             # Data models and types
-│   │   └── tax-model.js
+│   │   ├── calculatorService.ts
+│   │   ├── calculatorService.test.ts
+│   │   └── validationService.ts
+│   ├── models/             # TypeScript types and interfaces
+│   │   ├── TaxModel.ts
+│   │   └── index.ts
+│   ├── hooks/              # Custom React hooks
+│   │   ├── useCalculator.ts
+│   │   └── useLocalStorage.ts
+│   ├── context/            # React Context providers
+│   │   └── AppContext.tsx
 │   ├── utils/              # Shared utilities
-│   │   └── format-utils.js
+│   │   ├── formatUtils.ts
+│   │   └── formatUtils.test.ts
 │   ├── styles/             # Global styles
 │   │   ├── variables.css   # CSS custom properties
 │   │   ├── reset.css       # CSS reset/normalize
-│   │   ├── typography.css  # Typography system
-│   │   └── utilities.css   # Utility classes
-│   └── app.js              # Application initialization
-├── tests/                  # Unit tests
-│   ├── services/
-│   │   └── calculator-service.test.js
-│   └── utils/
-│       └── format-utils.test.js
-└── assets/                 # Static assets
-    ├── images/
-    └── fonts/
+│   │   └── global.css      # Global styles
+│   └── assets/             # Static assets
+│       ├── images/
+│       └── fonts/
+└── public/                 # Public static files
+    └── favicon.ico
 ```
 
 ### 3.2 Separation of Concerns
@@ -106,35 +123,43 @@ Every file should have a single, clear responsibility:
 
 #### **Layered Architecture (Frontend Only)**
 
-**1. Presentation Layer (HTML + CSS)**
-- Semantic HTML5 elements
-- Web Components for composition
-- CSS modules scoped to components
-- No inline styles (except dynamic styles via JS)
-- No inline scripts
+**1. Presentation Layer (React Components)**
+- React functional components with TypeScript
+- CSS Modules for component-scoped styling
+- Semantic JSX markup
+- Props typing with TypeScript interfaces
+- No business logic in components (delegate to hooks/services)
 
-**2. Component Layer (Web Components)**
-- Custom Elements for reusable UI components
-- Shadow DOM for encapsulation (where appropriate)
-- Template elements for markup patterns
-- Component-specific styles in separate CSS files
-- Components consume services, never contain business logic
+**2. Component Layer (React Components)**
+- Functional components with hooks
+- Component composition patterns
+- Props validation via TypeScript
+- Component-specific styles in CSS Modules
+- Controlled/uncontrolled component patterns
+- Components consume services via hooks
 
-**3. Service Layer (Business Logic)**
-- Pure JavaScript modules
+**3. Hook Layer (React State Logic)**
+- Custom hooks for reusable logic
+- State management with useState/useReducer
+- Side effects with useEffect
+- Context consumption with useContext
+- Hooks delegate to services for business logic
+
+**4. Service Layer (Business Logic)**
+- Pure TypeScript functions/classes
+- Framework-agnostic business logic
 - Testable, pure functions where possible
-- Business rules and calculations
-- Data validation
+- No React dependencies
 - No DOM manipulation
-- No direct component coupling
 
-**4. Model Layer (Data Structures)**
-- Plain JavaScript objects/classes
-- Data validation schemas
-- Type definitions (JSDoc for typing)
-- Immutable data patterns preferred
+**5. Model Layer (TypeScript Types)**
+- Type definitions and interfaces
+- Enums and constants
+- Type guards and validators
+- Zod schemas for runtime validation (optional)
+- Immutable data patterns
 
-**5. Utility Layer (Cross-Cutting Concerns)**
+**6. Utility Layer (Cross-Cutting Concerns)**
 - Formatting helpers
 - Date/time utilities
 - Common validators
@@ -142,98 +167,133 @@ Every file should have a single, clear responsibility:
 
 ---
 
-## 4. Web Components Standards
+## 4. React Component Standards
 
 ### 4.1 Component Structure
 
 Each component must follow this pattern:
 
-**File: `src/components/tax-input/tax-input.js`**
-```javascript
+**File: `src/components/TaxInput/TaxInput.tsx`**
+```typescript
+import { ChangeEvent } from 'react';
+import styles from './TaxInput.module.css';
+
+interface TaxInputProps {
+  label?: string;
+  value: number;
+  onChange: (value: number) => void;
+  error?: string;
+  disabled?: boolean;
+}
+
 /**
  * TaxInput component for entering tax-related information
  */
-export class TaxInputComponent extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-  }
+export function TaxInput({
+  label = 'Tax Amount',
+  value,
+  onChange,
+  error,
+  disabled = false,
+}: TaxInputProps) {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const numValue = parseFloat(e.target.value);
+    if (!isNaN(numValue)) {
+      onChange(numValue);
+    }
+  };
 
-  connectedCallback() {
-    this.render();
-    this.attachEventListeners();
-  }
-
-  render() {
-    this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="/src/components/tax-input/tax-input.css">
-      <div class="tax-input">
-        <label for="input">
-          <slot name="label">Tax Amount</slot>
-        </label>
-        <input type="number" id="input" />
-      </div>
-    `;
-  }
-
-  attachEventListeners() {
-    // Event listeners here
-  }
-
-  disconnectedCallback() {
-    // Cleanup here
-  }
+  return (
+    <div className={styles.taxInput}>
+      <label htmlFor="tax-input" className={styles.label}>
+        {label}
+      </label>
+      <input
+        id="tax-input"
+        type="number"
+        value={value}
+        onChange={handleChange}
+        disabled={disabled}
+        className={styles.input}
+        aria-invalid={!!error}
+        aria-describedby={error ? 'tax-input-error' : undefined}
+      />
+      {error && (
+        <span id="tax-input-error" className={styles.error} role="alert">
+          {error}
+        </span>
+      )}
+    </div>
+  );
 }
-
-customElements.define('tax-input', TaxInputComponent);
 ```
 
-**File: `src/components/tax-input/tax-input.css`**
+**File: `src/components/TaxInput/TaxInput.module.css`**
 ```css
-.tax-input {
+.taxInput {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
 }
 
-label {
+.label {
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
 }
 
-input {
+.input {
   padding: var(--spacing-sm);
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
 }
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+}
+```
+
+**File: `src/components/TaxInput/index.ts`**
+```typescript
+export { TaxInput } from './TaxInput';
+export type { TaxInputProps } from './TaxInput';
 ```
 
 ### 4.2 Component Design Principles
 
 **Composition Over Inheritance**
-- Build complex components from simple ones
-- Use slots for content projection
-- Avoid deep component inheritance
+- Build complex components from simpler ones
+- Use children prop for content projection
+- Prefer composition to prop drilling
 
 **Single Responsibility**
 - Each component does one thing well
 - Break down complex UIs into smaller components
-- Component names reflect their purpose
+- Component names reflect their purpose (PascalCase)
 
-**Encapsulation**
-- Use Shadow DOM for style isolation when appropriate
-- Expose minimal public API
-- Internal state management within component
+**TypeScript First**
+- All components fully typed
+- Props defined with interfaces
+- Use Pick, Omit, extends for prop composition
+- Avoid `any` types
 
 **Communication**
-- Parent → Child: Attributes and properties
-- Child → Parent: Custom events
-- Sibling ↔ Sibling: Via shared parent or event bus (sparingly)
+- Parent → Child: Props (typed)
+- Child → Parent: Callback props
+- Sibling ↔ Sibling: Via shared parent state or Context
+- Global state: React Context (avoid prop drilling)
 
-### 4.3 Custom Element Naming
-- Use kebab-case (required by spec)
-- Include app prefix to avoid conflicts: `mvp-button`, `tax-calculator`
-- Descriptive names: `mvp-form-input`, `mvp-result-display`
+### 4.3 Component Naming Conventions
+- Use PascalCase for component names: `TaxInput`, `ResultDisplay`
+- One component per file
+- File name matches component name: `TaxInput.tsx`
+- Folder name matches component name: `TaxInput/`
+- Re-export from `index.ts` for clean imports
 
 ---
 
@@ -330,39 +390,42 @@ input {
 
 ### 6.1 Module System
 
-**Use ES Modules exclusively:**
-```javascript
+**Use ES Modules with TypeScript:**
+```typescript
 // Importing
-import { calculateTax } from './services/tax-service.js';
-import { TaxModel } from './models/tax-model.js';
+import { calculateTax } from './services/calculatorService';
+import { TaxModel } from './models/TaxModel';
+import type { TaxCalculation } from './models';
 
 // Exporting
-export function calculateTax(income) { }
+export function calculateTax(income: number): number { }
 export class TaxModel { }
+export type { TaxCalculation };
 ```
 
-**Module Loading in HTML:**
-```html
-<script type="module" src="/src/app.js"></script>
-```
+**Module Loading:**
+- Vite handles bundling and code splitting
+- Use named exports for better tree-shaking
+- Import React components without .tsx extension
+- Use path aliases in tsconfig.json for cleaner imports
 
 ### 6.2 Service Layer Pattern
 
 Services contain business logic and must be:
 - **Pure functions** where possible (deterministic, no side effects)
 - **Testable** in isolation
-- **Framework-agnostic** (no DOM dependencies)
-- **Well-documented** with JSDoc
+- **Framework-agnostic** (no React dependencies)
+- **Fully typed** with TypeScript
 
-**Example: `src/services/tax-calculator-service.js`**
-```javascript
+**Example: `src/services/calculatorService.ts`**
+```typescript
+import type { TaxCalculation } from '../models';
+
 /**
  * Calculates PAYE tax based on income and tax brackets
- * @param {number} income - Annual income amount
- * @returns {{tax: number, netIncome: number, effectiveRate: number}}
  */
-export function calculatePAYE(income) {
-  if (typeof income !== 'number' || income < 0) {
+export function calculatePAYE(income: number): TaxCalculation {
+  if (income < 0) {
     throw new Error('Income must be a non-negative number');
   }
 
@@ -371,14 +434,19 @@ export function calculatePAYE(income) {
   const netIncome = income - tax;
   const effectiveRate = income > 0 ? (tax / income) * 100 : 0;
 
-  return { tax, netIncome, effectiveRate };
+  return {
+    income,
+    tax,
+    netIncome,
+    effectiveRate,
+    timestamp: new Date(),
+  };
 }
 
 /**
  * Internal function to calculate tax amount
- * @private
  */
-function calculateTaxAmount(income) {
+function calculateTaxAmount(income: number): number {
   // Tax bracket logic
   return 0; // Placeholder
 }
@@ -386,114 +454,199 @@ function calculateTaxAmount(income) {
 
 ### 6.3 Model Layer Pattern
 
-Models define data structures and validation:
+Models define TypeScript types and interfaces:
 
-**Example: `src/models/tax-calculation.js`**
-```javascript
+**Example: `src/models/TaxModel.ts`**
+```typescript
 /**
  * Represents a tax calculation result
  */
-export class TaxCalculation {
-  constructor(income, tax, netIncome, effectiveRate) {
-    this.income = income;
-    this.tax = tax;
-    this.netIncome = netIncome;
-    this.effectiveRate = effectiveRate;
-    this.timestamp = new Date();
-  }
+export interface TaxCalculation {
+  income: number;
+  tax: number;
+  netIncome: number;
+  effectiveRate: number;
+  timestamp: Date;
+}
 
-  /**
-   * Validates the tax calculation
-   * @returns {boolean}
-   */
-  isValid() {
-    return this.income >= 0 && 
-           this.tax >= 0 && 
-           this.netIncome >= 0;
-  }
+/**
+ * Type guard to validate TaxCalculation
+ */
+export function isTaxCalculation(obj: unknown): obj is TaxCalculation {
+  if (typeof obj !== 'object' || obj === null) return false;
+  
+  const calc = obj as TaxCalculation;
+  return (
+    typeof calc.income === 'number' &&
+    typeof calc.tax === 'number' &&
+    typeof calc.netIncome === 'number' &&
+    typeof calc.effectiveRate === 'number' &&
+    calc.timestamp instanceof Date &&
+    calc.income >= 0 &&
+    calc.tax >= 0 &&
+    calc.netIncome >= 0
+  );
+}
 
-  /**
-   * Converts to plain object for serialization
-   * @returns {Object}
-   */
-  toJSON() {
-    return {
-      income: this.income,
-      tax: this.tax,
-      netIncome: this.netIncome,
-      effectiveRate: this.effectiveRate,
-      timestamp: this.timestamp.toISOString()
-    };
-  }
+/**
+ * Serializes TaxCalculation for storage
+ */
+export function serializeTaxCalculation(calc: TaxCalculation): string {
+  return JSON.stringify({
+    ...calc,
+    timestamp: calc.timestamp.toISOString(),
+  });
+}
+
+/**
+ * Deserializes TaxCalculation from storage
+ */
+export function deserializeTaxCalculation(json: string): TaxCalculation {
+  const obj = JSON.parse(json);
+  return {
+    ...obj,
+    timestamp: new Date(obj.timestamp),
+  };
 }
 ```
 
 ### 6.4 State Management
 
-For MVP applications, use simple state management:
+For MVP applications, use React's built-in state management:
 
-**Option 1: Component-Local State**
-- State stored in component properties
+**Option 1: Component-Local State (useState)**
+- Use for component-specific state
 - Suitable for isolated components
+```typescript
+const [count, setCount] = useState(0);
+```
 
-**Option 2: Shared State Object**
-- Single state object for app-wide state
-- Observable pattern for reactivity
-- Kept minimal and simple
+**Option 2: Lifted State**
+- Share state between components via props
+- Lift state to common ancestor
 
-**Example: `src/services/state-service.js`**
-```javascript
-class AppState {
-  constructor() {
-    this.state = {};
-    this.listeners = {};
-  }
+**Option 3: React Context (for global state)**
+- Use for app-wide state
+- Avoid prop drilling
+- Keep minimal and focused
 
-  get(key) {
-    return this.state[key];
-  }
+**Example: `src/context/AppContext.tsx`**
+```typescript
+import { createContext, useContext, useState, ReactNode } from 'react';
+import type { TaxCalculation } from '../models';
 
-  set(key, value) {
-    this.state[key] = value;
-    this.notify(key, value);
-  }
-
-  subscribe(key, callback) {
-    if (!this.listeners[key]) {
-      this.listeners[key] = [];
-    }
-    this.listeners[key].push(callback);
-  }
-
-  notify(key, value) {
-    if (this.listeners[key]) {
-      this.listeners[key].forEach(cb => cb(value));
-    }
-  }
+interface AppContextValue {
+  calculation: TaxCalculation | null;
+  setCalculation: (calc: TaxCalculation) => void;
 }
 
-export const appState = new AppState();
+const AppContext = createContext<AppContextValue | undefined>(undefined);
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [calculation, setCalculation] = useState<TaxCalculation | null>(null);
+
+  return (
+    <AppContext.Provider value={{ calculation, setCalculation }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+export function useAppContext() {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('useAppContext must be used within AppProvider');
+  }
+  return context;
+}
+```
+
+**Custom Hooks for Reusable Logic:**
+```typescript
+// src/hooks/useCalculator.ts
+import { useState } from 'react';
+import { calculatePAYE } from '../services/calculatorService';
+import type { TaxCalculation } from '../models';
+
+export function useCalculator() {
+  const [calculation, setCalculation] = useState<TaxCalculation | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const calculate = (income: number) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = calculatePAYE(income);
+      setCalculation(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Calculation failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { calculation, error, isLoading, calculate };
+}
 ```
 
 ### 6.5 Error Handling
 
-**Consistent error handling patterns:**
-```javascript
-export function processData(data) {
+**Service Layer Error Handling:**
+```typescript
+export function processData(data: unknown): ProcessedData {
   try {
     validateData(data);
     return transformData(data);
   } catch (error) {
     console.error('Error processing data:', error);
-    throw new Error(`Failed to process data: ${error.message}`);
+    throw new Error(
+      `Failed to process data: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 ```
 
-**User-facing errors:**
-- Display in UI via custom events
+**React Error Boundaries:**
+```typescript
+// src/components/ErrorBoundary/ErrorBoundary.tsx
+import { Component, ReactNode } from 'react';
+
+interface Props {
+  children: ReactNode;
+  fallback?: ReactNode;
+}
+
+interface State {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback || <div>Something went wrong</div>;
+    }
+    return this.props.children;
+  }
+}
+```
+
+**User-Facing Errors:**
+- Display in UI via state
 - Never expose technical details to users
 - Provide actionable error messages
+- Use TypeScript to catch errors at compile time
 
 ---
 
@@ -519,12 +672,12 @@ export function processData(data) {
 
 ### 7.2 Testing Framework
 
-**Vitest** (recommended) or **Jest**
+**Vitest** (for unit/integration tests) + **React Testing Library** (for component tests)
 
-**Example Test: `tests/services/tax-calculator-service.test.js`**
-```javascript
+**Service Test Example: `src/services/calculatorService.test.ts`**
+```typescript
 import { describe, it, expect } from 'vitest';
-import { calculatePAYE } from '../../src/services/tax-calculator-service.js';
+import { calculatePAYE } from './calculatorService';
 
 describe('calculatePAYE', () => {
   it('should calculate tax correctly for basic income', () => {
@@ -542,32 +695,84 @@ describe('calculatePAYE', () => {
   });
 
   it('should throw error for negative income', () => {
-    expect(() => calculatePAYE(-1000)).toThrow();
+    expect(() => calculatePAYE(-1000)).toThrow('Income must be a non-negative number');
+  });
+});
+```
+
+**Component Test Example: `src/components/TaxInput/TaxInput.test.tsx`**
+```typescript
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { TaxInput } from './TaxInput';
+
+describe('TaxInput', () => {
+  it('should render with label', () => {
+    const onChange = vi.fn();
+    render(<TaxInput value={0} onChange={onChange} label="Income" />);
+    
+    expect(screen.getByLabelText('Income')).toBeInTheDocument();
   });
 
-  it('should throw error for non-numeric input', () => {
-    expect(() => calculatePAYE('invalid')).toThrow();
+  it('should call onChange when value changes', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    
+    render(<TaxInput value={0} onChange={onChange} />);
+    const input = screen.getByRole('spinbutton');
+    
+    await user.type(input, '50000');
+    expect(onChange).toHaveBeenCalled();
+  });
+
+  it('should display error message', () => {
+    const onChange = vi.fn();
+    render(<TaxInput value={0} onChange={onChange} error="Invalid amount" />);
+    
+    expect(screen.getByRole('alert')).toHaveTextContent('Invalid amount');
   });
 });
 ```
 
 ### 7.3 Test Configuration
 
-**File: `vitest.config.js`**
-```javascript
+**File: `vitest.config.ts`**
+```typescript
 import { defineConfig } from 'vitest/config';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
+  plugins: [react()],
   test: {
     globals: true,
-    environment: 'jsdom', // For DOM testing if needed
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'html'],
-      include: ['src/services/**', 'src/models/**', 'src/utils/**'],
-      exclude: ['**/*.test.js', '**/node_modules/**']
-    }
-  }
+      reporter: ['text', 'html', 'json'],
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        '**/*.test.{ts,tsx}',
+        '**/*.spec.{ts,tsx}',
+        '**/node_modules/**',
+        '**/dist/**',
+        'src/main.tsx',
+        'src/vite-env.d.ts',
+      ],
+    },
+  },
+});
+```
+
+**File: `src/test/setup.ts`**
+```typescript
+import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
+import { afterEach } from 'vitest';
+
+afterEach(() => {
+  cleanup();
 });
 ```
 
@@ -685,59 +890,58 @@ export const storage = new StorageService();
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MVP Application</title>
-  
-  <!-- Global Styles -->
-  <link rel="stylesheet" href="/src/styles/reset.css">
-  <link rel="stylesheet" href="/src/styles/variables.css">
-  <link rel="stylesheet" href="/src/styles/typography.css">
-  <link rel="stylesheet" href="/src/styles/utilities.css">
-  
-  <!-- App Initialization -->
-  <script type="module" src="/src/app.js"></script>
 </head>
 <body>
-  <div id="app">
-    <!-- Application components loaded here -->
-    <mvp-header></mvp-header>
-    <main>
-      <mvp-calculator></mvp-calculator>
-    </main>
-    <mvp-footer></mvp-footer>
-  </div>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
 ```
 
-**File: `src/app.js`**
-```javascript
-/**
- * Application initialization and component registration
- */
+**File: `src/main.tsx`**
+```typescript
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { App } from './App';
+import './styles/reset.css';
+import './styles/variables.css';
+import './styles/global.css';
 
-// Import all components
-import './components/mvp-header/mvp-header.js';
-import './components/mvp-calculator/mvp-calculator.js';
-import './components/mvp-footer/mvp-footer.js';
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
 
-// Import services if needed for initialization
-import { appState } from './services/state-service.js';
+**File: `src/App.tsx`**
+```typescript
+import { AppProvider } from './context/AppContext';
+import { Calculator } from './components/Calculator';
+import styles from './App.module.css';
 
-/**
- * Initialize application
- */
-function init() {
-  console.log('Application initialized');
-  
-  // Any startup logic here
-  // Load saved state, set up global event listeners, etc.
+export function App() {
+  return (
+    <AppProvider>
+      <div className={styles.app}>
+        <header className={styles.header}>
+          <h1>MVP Application</h1>
+        </header>
+        <main className={styles.main}>
+          <Calculator />
+        </main>
+        <footer className={styles.footer}>
+          <p>&copy; 2026 MVP App</p>
+        </footer>
+      </div>
+    </AppProvider>
+  );
 }
+```
 
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
-} else {
-  init();
-}
+**File: `src/vite-env.d.ts`**
+```typescript
+/// <reference types="vite/client" />
 ```
 
 ---
@@ -785,42 +989,143 @@ export default {
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "test": "vitest",
+    "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "lint:js": "eslint src/**/*.js",
-    "lint:css": "stylelint src/**/*.css",
-    "format": "prettier --write \"src/**/*.{js,css,html}\""
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "vite": "^5.0.0",
-    "vitest": "^1.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "@vitest/coverage-v8": "^1.0.0",
     "@vitest/ui": "^1.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/user-event": "^14.0.0",
     "eslint": "^8.0.0",
-    "stylelint": "^16.0.0",
-    "prettier": "^3.0.0"
+    "eslint-plugin-react": "^7.33.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.0",
+    "jsdom": "^23.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
   }
 }
 ```
 
-### 10.3 Code Quality Tools
-
-**ESLint Configuration: `.eslintrc.json`**
+**File: `tsconfig.json`**
 ```json
 {
-  "env": {
-    "browser": true,
-    "es2022": true
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "extends": "eslint:recommended",
-  "parserOptions": {
-    "ecmaVersion": 2022,
-    "sourceType": "module"
-  },
-  "rules": {
-    "no-console": "warn",
-    "no-unused-vars": "error"
-  }
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
+```
+
+**File: `tsconfig.node.json`**
+```json
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+```
+
+**File: `vite.config.ts`**
+```typescript
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    port: 3000,
+    open: true,
+  },
+});
+```
+
+### 10.3 Code Quality Tools
+
+**ESLint Configuration: `.eslintrc.cjs`**
+```javascript
+module.exports = {
+  root: true,
+  env: { browser: true, es2020: true },
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
+    'plugin:react-hooks/recommended',
+  ],
+  ignorePatterns: ['dist', '.eslintrc.cjs'],
+  parser: '@typescript-eslint/parser',
+  plugins: ['react-refresh'],
+  rules: {
+    'react-refresh/only-export-components': [
+      'warn',
+      { allowConstantExport: true },
+    ],
+    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-explicit-any': 'error',
+  },
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
+};
 ```
 
 **Prettier Configuration: `.prettierrc.json`**
@@ -1094,13 +1399,17 @@ From MVP to full architecture, these can be reused:
 The following are **fixed constraints** for MVP applications:
 
 1. Must be client-side only (no custom backend)
-2. Must use Web Components (no framework components)
-3. Must use vanilla JavaScript (ES2022+, no TypeScript required for MVP)
-4. Must separate concerns (HTML/CSS/JS in separate files)
-5. Business logic must be testable (service layer pattern)
-6. Must use CSS custom properties for theming
-7. Must be deployable as static files
-8. Must follow accessibility standards (WCAG 2.1 AA minimum)
+2. Must use React with TypeScript
+3. Must use Vite as build tool
+4. All code must be in `/src` folder
+5. Must use functional components with hooks (no class components)
+6. Business logic must be testable (service layer pattern)
+7. Must use CSS Modules or styled-components for styling
+8. Must use CSS custom properties for theming
+9. Must be deployable as static files
+10. Must follow accessibility standards (WCAG 2.1 AA minimum)
+11. TypeScript strict mode must be enabled
+12. No `any` types allowed (use `unknown` and type guards instead)
 
 Optimizations and enhancements are permitted within these boundaries.
 
@@ -1110,52 +1419,84 @@ Optimizations and enhancements are permitted within these boundaries.
 
 ### 18.1 Form Handling
 
-```javascript
-// In component
-handleSubmit(event) {
-  event.preventDefault();
-  const formData = new FormData(event.target);
-  const data = Object.fromEntries(formData);
-  
-  // Validate
-  const errors = validateForm(data);
-  if (errors.length > 0) {
-    this.displayErrors(errors);
-    return;
-  }
-  
-  // Process via service
-  const result = processFormData(data);
-  
-  // Emit event to parent
-  this.dispatchEvent(new CustomEvent('form-submit', {
-    detail: result,
-    bubbles: true
-  }));
+```typescript
+import { FormEvent, useState } from 'react';
+import { validateForm } from '../utils/validation';
+import type { FormData } from '../models';
+
+function MyForm() {
+  const [formData, setFormData] = useState<FormData>({ income: 0 });
+  const [errors, setErrors] = useState<string[]>([]);
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    
+    const validationErrors = validateForm(formData);
+    if (validationErrors.length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+    
+    const result = processFormData(formData);
+    onSubmit(result);
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* form fields */}
+    </form>
+  );
 }
 ```
 
 ### 18.2 Loading States
 
-```javascript
-class MyComponent extends HTMLElement {
-  setLoading(isLoading) {
-    this.setAttribute('aria-busy', isLoading);
-    const button = this.shadowRoot.querySelector('button');
-    button.disabled = isLoading;
-    button.textContent = isLoading ? 'Loading...' : 'Submit';
-  }
+```typescript
+import { useState } from 'react';
+import styles from './MyComponent.module.css';
+
+function MyComponent() {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleClick = async () => {
+    setIsLoading(true);
+    try {
+      await performAction();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      disabled={isLoading}
+      aria-busy={isLoading}
+      className={styles.button}
+    >
+      {isLoading ? 'Loading...' : 'Submit'}
+    </button>
+  );
 }
 ```
 
 ### 18.3 Error Display
 
-```javascript
-displayError(message) {
-  const errorEl = this.shadowRoot.querySelector('.error-message');
-  errorEl.textContent = message;
-  errorEl.setAttribute('role', 'alert');
-  errorEl.classList.add('is-visible');
+```typescript
+import styles from './ErrorMessage.module.css';
+
+interface ErrorMessageProps {
+  message: string;
+}
+
+export function ErrorMessage({ message }: ErrorMessageProps) {
+  if (!message) return null;
+
+  return (
+    <div className={styles.error} role="alert">
+      {message}
+    </div>
+  );
 }
 ```
 
@@ -1172,15 +1513,20 @@ displayError(message) {
 ## 20. References and Resources
 
 ### Learning Resources
-- [MDN Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components)
-- [ES Modules Guide](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+- [React Documentation](https://react.dev/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+- [Vite Guide](https://vitejs.dev/guide/)
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
+- [CSS Modules](https://github.com/css-modules/css-modules)
 - [CSS Custom Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties)
 - [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
 
 ### Tools
-- [Vitest](https://vitest.dev/)
 - [Vite](https://vitejs.dev/)
+- [Vitest](https://vitest.dev/)
+- [React Testing Library](https://testing-library.com/)
 - [ESLint](https://eslint.org/)
+- [TypeScript](https://www.typescriptlang.org/)
 - [Prettier](https://prettier.io/)
 
 ---

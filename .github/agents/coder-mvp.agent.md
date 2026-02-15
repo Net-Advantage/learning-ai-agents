@@ -36,15 +36,33 @@ When assigned a work item or starting new work:
 ├── index.html              # Navigation page to all features
 ├── {feature-name}/         # Each feature in its own folder (from master work item)
 │   ├── index.html          # Feature entry point
+│   ├── package.json        # Dependencies and scripts
+│   ├── tsconfig.json       # TypeScript configuration
+│   ├── vite.config.ts      # Vite configuration
 │   ├── README.md           # Feature documentation
-│   ├── src/
-│   │   ├── components/     # Web Components for this feature
-│   │   ├── services/       # Business logic
-│   │   ├── models/         # Data models
-│   │   ├── styles/         # Global styles (variables, reset, etc.)
-│   │   └── app.js          # Feature initialization
-│   ├── tests/              # Unit tests
-│   └── assets/             # Static assets
+│   ├── src/                # ALL code goes here
+│   │   ├── main.tsx        # Feature entry point
+│   │   ├── App.tsx         # Root component
+│   │   ├── components/     # React components
+│   │   │   ├── ComponentName/
+│   │   │   │   ├── ComponentName.tsx
+│   │   │   │   ├── ComponentName.module.css
+│   │   │   │   ├── ComponentName.test.tsx
+│   │   │   │   └── index.ts
+│   │   ├── services/       # Business logic (TypeScript)
+│   │   ├── models/         # TypeScript types/interfaces
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── context/        # React Context providers
+│   │   ├── utils/          # Shared utilities
+│   │   ├── styles/         # Global styles (CSS)
+│   │   │   ├── variables.css
+│   │   │   ├── reset.css
+│   │   │   └── global.css
+│   │   └── assets/         # Static assets
+│   └── public/             # Public static files
+└── shared/                 # Shared components/utils across features
+    ├── components/
+    └── utils/
 ```
 
 **Feature Naming**: Use the feature name from the master work item (WI-001). Example:
@@ -52,13 +70,14 @@ When assigned a work item or starting new work:
 
 ### Step 3: Read Architecture Specification
 **CRITICAL**: Before writing any code, read `/specs/non-functional/architecture-mvp.spec.md` to understand:
-- Mandated technology stack (HTML, CSS, JavaScript, Web Components)
-- File structure requirements within feature folders
-- Layered architecture patterns (Components, Services, Models, Styles)
-- Separation of concerns principles
-- Module system (ES Modules)
-- Testing strategy
-- Data persistence patterns (localStorage)
+- Mandated technology stack (React, TypeScript, Vite, CSS Modules)
+- File structure requirements (all code in `/src` folder)
+- Layered architecture patterns (Components, Hooks, Services, Models, Context)
+- React component patterns (functional components with hooks)
+- TypeScript strict typing requirements
+- Testing strategy (Vitest + React Testing Library)
+- State management patterns (useState, useContext, custom hooks)
+- Module system (ES Modules with TypeScript)
 
 ### Step 4: Read Functional Specification
 Read the source specification referenced in the work item (e.g., `/specs/functional/{feature}.spec.md`) to:
@@ -82,104 +101,141 @@ For each task in the work item:
 
 **First Time Setup (if feature folder doesn't exist):**
 1. Create feature folder: `/src/mvp/{feature-name}/`
-2. Create feature `index.html` with proper structure
-3. Update `/src/mvp/index.html` to add navigation link to this feature
-4. Create folder structure: `src/`, `tests/`, `assets/`
-5. Create feature `README.md` documenting the feature
-6. Create shared components folder if building reusable UI components: `/src/mvp/{feature-name}/src/components/shared/`
+2. Run `npm create vite@latest . -- --template react-ts` in feature folder
+3. Configure `package.json` with correct scripts
+4. Set up `tsconfig.json` with strict TypeScript settings
+5. Configure `vite.config.ts` with path aliases
+6. Create feature `index.html` with proper structure
+7. Update `/src/mvp/index.html` to add navigation link to this feature
+8. Create `src/` folder structure: `components/`, `services/`, `models/`, `hooks/`, `context/`, `utils/`, `styles/`, `assets/`
+9. Create `src/main.tsx` as entry point
+10. Create feature `README.md` documenting the feature
+11. Create shared components folder if building reusable UI: `/src/mvp/shared/components/`
+12. Install dependencies: `npm install`
+13. Verify dev server works: `npm run dev`
 
 **For Components Layer:**
-- Create Web Components following the architecture spec structure
-- Each component in its own directory: `/src/mvp/{feature-name}/src/components/{component-name}/`
-- Component files: `{component-name}.js`, `{component-name}.css`, `README.md`
-- Use Custom Elements API (`customElements.define()`)
-- Follow design tokens from UX spec
-- Implement proper encapsulation and communication patterns
-- No business logic in components (delegate to services)
+- Create React functional components with TypeScript
+- Each component in its own directory: `/src/mvp/{feature-name}/src/components/{ComponentName}/`
+- Component files: `{ComponentName}.tsx`, `{ComponentName}.module.css`, `{ComponentName}.test.tsx`, `index.ts`
+- Use TypeScript interfaces for props
+- Use hooks for state and effects (useState, useEffect, useContext)
+- Follow design tokens from UX spec in CSS Modules
+- Implement proper props validation and typing
+- No business logic in components (delegate to hooks/services)
+- Export component and props type from `index.ts`
 
 **Build Reusable Components First:**
 - For common UI elements (buttons with loading states, form controls, modals), build them as **shared components** first
-- Place in `/src/mvp/{feature-name}/src/components/shared/` or `/src/mvp/shared/components/` for cross-feature reuse
-- Test shared components in isolation with Playwright before using in features
-- Create component test pages: `/src/mvp/{feature-name}/tests/components/{component-name}.test.html`
+- Place in `/src/mvp/shared/components/` for cross-feature reuse
+- Test shared components in isolation with React Testing Library before using in features
+- Create component test files: `/src/mvp/shared/components/{ComponentName}/{ComponentName}.test.tsx`
+- Use Storybook (optional) for component development in isolation
 - Benefits: Avoid bugs like stuck spinners, ensure consistency, enable reuse
 
 **For Services Layer:**
-- Create pure, testable functions in `/src/mvp/{feature-name}/src/services/`
-- No DOM manipulation
+- Create pure TypeScript functions/classes in `/src/mvp/{feature-name}/src/services/`
+- No DOM manipulation, no React dependencies
 - Export functions that implement business logic
-- Use JSDoc for documentation
-- Handle errors consistently
-- Return structured data (use models)
+- Use TypeScript types and interfaces for all parameters and return values
+- Handle errors consistently with typed error handling
+- Return structured data (use typed models/interfaces)
+- Co-locate tests: `{serviceName}.test.ts` next to `{serviceName}.ts`
 
 **For Models Layer:**
-- Define data structures in `/src/mvp/{feature-name}/src/models/`
-- Use classes or plain objects
-- Include validation methods
-- Add JSDoc type annotations
+- Define TypeScript types and interfaces in `/src/mvp/{feature-name}/src/models/`
+- Create type definitions for data structures
+- Use `interface` for object shapes, `type` for unions/intersections
+- Include type guards for runtime validation
+- Use Zod or similar for schema validation (optional)
+- Export all types from `src/models/index.ts`
 - Keep models framework-agnostic
 
+**For Hooks Layer:**
+- Create custom React hooks in `/src/mvp/{feature-name}/src/hooks/`
+- Use hooks to encapsulate reusable stateful logic
+- Hooks call services for business logic
+- Name hooks with `use` prefix: `useCalculator`, `useLocalStorage`
+- Return objects with state and functions
+- Test hooks with component tests or @testing-library/react-hooks
+- Example patterns: data fetching, form handling, local storage, timers
+
 **For Styles Layer:**
+- Use CSS Modules for component-scoped styles
+- Component styles: `ComponentName.module.css` imported in component
+- Global styles in `/src/mvp/{feature-name}/src/styles/`: `variables.css`, `reset.css`, `global.css`
 - Use CSS custom properties from UX spec
-- Organize into `/src/mvp/{feature-name}/src/styles/`: variables.css, reset.css, typography.css, utilities.css
-- Follow BEM naming convention for components
+- Follow naming convention for CSS classes (camelCase in modules)
 - Mobile-first responsive design
-- No inline styles
+- No inline styles (except dynamic styles computed in TypeScript)
 
 **For Testing:**
 - **Unit Tests**: Write unit tests for services and utilities
-  - Use Vitest or Jest as specified in architecture spec
+  - Use Vitest as testing framework
+  - Co-locate tests with source files: `{name}.test.ts`
   - Aim for high coverage on business logic
-  - Place tests in `/src/mvp/{feature-name}/tests/` directory mirroring `src/` structure
+  - Test files in same directory as implementation
   
-- **Component Tests**: Test shared components in isolation
-  - Create test HTML pages for each shared component
-  - Place in `/src/mvp/{feature-name}/tests/components/`
-  - Test user interactions, state changes, edge cases
+- **Component Tests**: Test React components with React Testing Library
+  - Create test files: `{ComponentName}.test.tsx`
+  - Test user interactions, rendering, props, state changes
+  - Use `screen` queries and user-event for interactions
+  - Test accessibility with jest-dom matchers
   
-- **End-to-End Tests**: Use Playwright for browser automation testing
-  - Install: `npm install -D @playwright/test`
-  - Create test files in `/src/mvp/{feature-name}/tests/e2e/`
-  - Test complete user workflows, not just individual components
-  - Verify UI elements appear/disappear correctly (loading states, modals, etc.)
-  - Run with: `npx playwright test`
-  - Run in UI mode for debugging: `npx playwright test --ui`
+- **Integration Tests**: Test feature workflows
+  - Test multiple components working together
+  - Use React Testing Library for rendering complete features
+  - Mock services at the boundary
+  - Verify complete user journeys
+  
+- **Type Safety**: TypeScript catches errors at compile time
+  - Run `npm run type-check` to verify types
+  - No `any` types allowed
+  - Use strict TypeScript configuration
 
 **For Documentation:**
 - Create feature README.md at `/src/mvp/{feature-name}/README.md`
-- Document component usage with examples
-- Explain service APIs
+- Document component usage with TypeScript examples
+- Explain service APIs with type signatures
 - Include setup and deployment instructions
 - Add navigation entry in `/src/mvp/index.html`
+- Use TSDoc comments for functions and components
 
 ### Step 7: Follow Architectural Constraints
 Ensure your implementation respects these constraints from the architecture spec:
 
 **Separation of Concerns:**
-- HTML files: structure only
-- CSS files: presentation only
-- JavaScript files: behavior only
+- React components (`.tsx`): UI rendering and user interaction
+- CSS Modules (`.module.css`): component-scoped styling
+- Services (`.ts`): business logic, framework-agnostic
+- Models (`.ts`): type definitions and interfaces
+- Hooks (`.ts`): reusable stateful logic
 - Each file has ONE responsibility
 
 **Dependency Rules:**
-- Components → Services (allowed)
-- Components → Models (allowed)
+- Components → Hooks (allowed)
+- Components → Services via Hooks (allowed)
+- Hooks → Services (allowed)
+- Hooks → Models (allowed)
 - Services → Models (allowed)
-- Services → Components (FORBIDDEN)
-- Models → anything (FORBIDDEN - models are pure data)
+- Services → React/Components (FORBIDDEN - keep services framework-agnostic)
+- Models → anything (FORBIDDEN - models are pure types)
 
 **Technology Constraints:**
-- No frameworks (React, Vue, Angular, etc.)
-- No backend (client-side only)
-- No CSS frameworks (Bootstrap, Tailwind, etc.)
-- Use vanilla JavaScript, Web Components, ES Modules
+- Must use React 18+ with TypeScript 5+
+- Must use Vite as build tool
+- All code in `/src` folder
+- Use functional components with hooks (no class components)
+- Use CSS Modules for component styles
+- TypeScript strict mode enabled
+- No `any` types allowed
 
 **File Organization:**
 - Follow the mandated directory structure exactly
-- Features in `/src/mvp/{feature-name}/`
-- One component per directory within feature
-- Separate CSS files (no CSS-in-JS)
-- ES modules for all JavaScript
+- All code in `/src/mvp/{feature-name}/src/`
+- One component per directory with co-located test and styles
+- Re-export from `index.ts` for clean imports
+- Use TypeScript for all `.ts` and `.tsx` files
 
 ### Step 8: Apply UX Design System
 When implementing UI components:
@@ -221,25 +277,28 @@ transition: var(--transition-base);
 
 ### Step 9: Test Your Implementation
 Before marking work complete:
+- **Run type checking**: `npm run type-check`
 - **Run unit tests**: `npm test`
-- **Run Playwright tests**: `npx playwright test` (for feature and component tests)
+- **Run tests with coverage**: `npm run test:coverage`
 - **Manual testing** in browser (verify user experience)
 - **Check responsive design** (mobile + desktop)
-- **Verify accessibility** with browser tools
+- **Verify accessibility** with browser tools and jest-dom matchers
 - **Test edge cases** from functional spec
 - **Test interaction states**: loading states, disabled states, error states, success states
 - **Validate against acceptance criteria**
 - **Update work item file**: Tick acceptance criteria checkboxes as each test passes
 
-**Playwright Testing Workflow:**
-1. Write Playwright tests for user workflows BEFORE marking work complete
-2. Test critical interactions: form submissions, button clicks, state changes
-3. Verify loading indicators appear AND disappear correctly
-4. Test error handling and validation messages
-5. Run tests in multiple browsers: `npx playwright test --project=chromium --project=firefox --project=webkit`
-6. Generate HTML report: `npx playwright show-report`
-7. Fix any failing tests before proceeding
-8. **Update work item acceptance criteria**: For each passing test that validates an acceptance criterion, update the work item file by changing `- [ ]` to `- [x]`
+**Testing Workflow:**
+1. Write tests alongside implementation (TDD or test-after)
+2. Test services in isolation (unit tests)
+3. Test components with React Testing Library
+4. Test critical interactions: form submissions, button clicks, state changes
+5. Verify loading indicators appear AND disappear correctly
+6. Test error handling and validation messages
+7. Use `screen.debug()` to see rendered output when debugging
+8. Run tests in watch mode during development: `npm test -- --watch`
+9. Check coverage: `npm run test:coverage`
+10. **Update work item acceptance criteria**: For each passing test that validates an acceptance criterion, update the work item file by changing `- [ ]` to `- [x]`
 
 ### Step 10: Document Your Work
 - Update component README files
@@ -251,15 +310,17 @@ Before marking work complete:
 ### Step 11: Mark Work Complete
 Only when all of these are true:
 - [ ] All tasks in work item completed
-- [ ] Code follows architecture spec patterns
+- [ ] Code follows architecture spec patterns (React + TypeScript + Vite)
 - [ ] UI matches UX design spec
 - [ ] All **unit tests** passing (`npm test`)
-- [ ] All **Playwright tests** passing (`npx playwright test`)
+- [ ] All **component tests** passing (React Testing Library)
+- [ ] **Type checking** passing (`npm run type-check`)
+- [ ] **No TypeScript errors** (strict mode enabled)
 - [ ] **Shared components tested in isolation** (if created)
 - [ ] Acceptance criteria met
 - [ ] **Work item file updated**: All acceptance criteria checkboxes ticked `[x]` in `/work-items/MVP/WI-XXX-*.md`
 - [ ] Documentation updated
-- [ ] No linting errors
+- [ ] No linting errors (`npm run lint`)
 
 **CRITICAL**: Before marking work complete, you MUST update the work item file to check off all acceptance criteria:
 1. Open the work item file: `/work-items/MVP/WI-XXX-{description}.md`
@@ -305,10 +366,10 @@ If you discover bugs during implementation or testing:
    - [ ] Bug is fixed
    - [ ] Regression test added
    - [ ] Related functionality still works
-   - [ ] Playwright test covers this scenario
+   - [ ] Test covers this scenario (unit/component test)
    ```
 4. **Treat bugs like work items**: Follow the same implementation workflow
-5. **Add regression tests**: Create Playwright test to prevent recurrence
+5. **Add regression tests**: Create unit or component test to prevent recurrence
 6. **Link to original work**: Reference the work item where bug was found
 
 ## Best Practices
@@ -323,17 +384,18 @@ If you discover bugs during implementation or testing:
 
 ### Component Development
 1. **Build shared components first**: For reusable UI (buttons with spinners, form controls), build and test separately
-2. **Test in isolation**: Create component test pages before integrating into features
-3. **Document component APIs**: Clear props, events, and usage examples in README.md
+2. **Test in isolation**: Create component tests with React Testing Library before integrating into features
+3. **Document component APIs**: Clear props types and usage examples in README.md or Storybook
 4. **Test all states**: Loading, disabled, error, success, empty states
-5. **CSS specificity**: Use higher specificity for state modifiers (e.g., `.btn.disabled` not just `.disabled`)
+5. **Use TypeScript**: Full type coverage for props, state, and return values
 
 ### Code Quality
-1. **Follow conventions**: Use architecture spec patterns exactly
+1. **Follow conventions**: Use architecture spec patterns exactly (React + TypeScript + Vite)
 2. **Be consistent**: Match existing code style
 3. **Keep it simple**: Avoid over-engineering for MVP
-4. **No duplication**: Extract common code to utilities
+4. **No duplication**: Extract common code to utilities or hooks
 5. **Comment why, not what**: Explain decisions, not obvious code
+6. **No `any` types**: Use proper TypeScript types or `unknown` with type guards
 
 ### Architecture Adherence
 1. **Respect layer boundaries**: Don't mix concerns
@@ -355,138 +417,171 @@ If you discover bugs during implementation or testing:
 3. **Keep tests simple**: One assertion per test when possible
 4. **Mock external dependencies**: Services should be unit testable
 5. **Readable test names**: Describe what is being tested
-6. **Use Playwright for E2E**: Test complete workflows, not just units
+6. **Use React Testing Library**: Test components from user perspective
 7. **Test interaction states**: Verify loading indicators appear AND disappear
 8. **Test shared components first**: Before using in features, ensure they work in isolation
-9. **Create regression tests**: For every bug fixed, add Playwright test to prevent recurrence
-10. **Test before marking complete**: Don't skip Playwright tests - they catch UI bugs unit tests miss
+9. **Create regression tests**: For every bug fixed, add test to prevent recurrence
+10. **Test before marking complete**: Don't skip tests - they catch bugs early
 
 ### Performance
 1. **Minimize dependencies**: Only add libraries if truly necessary
-2. **Lazy load components**: Import modules when needed
-3. **Optimize assets**: Compress images, minimize CSS/JS
-4. **Use native APIs**: Avoid polyfills for modern browsers
+2. **Lazy load components**: Use React.lazy() and Suspense for code splitting
+3. **Optimize assets**: Compress images, use WebP format
+4. **Memoization**: Use React.memo, useMemo, useCallback appropriately
 5. **Share wisely**: Extract truly shared code to `/src/mvp/shared/` but keep features independent when possible
 
 ## Common Patterns
 
-### Playwright Test Template
-```javascript
-import { test, expect } from '@playwright/test';
+### React Component with TypeScript Template
+```typescript
+import { useState } from 'react';
+import styles from './ComponentName.module.css';
 
-test.describe('Feature Name', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to feature
-    await page.goto('http://localhost:8000/src/mvp/{feature-name}/index.html');
+interface ComponentNameProps {
+  title: string;
+  onSubmit: (value: string) => void;
+  disabled?: boolean;
+}
+
+/**
+ * ComponentName - Brief description
+ */
+export function ComponentName({ title, onSubmit, disabled = false }: ComponentNameProps) {
+  const [value, setValue] = useState('');
+
+  const handleSubmit = () => {
+    onSubmit(value);
+    setValue('');
+  };
+
+  return (
+    <div className={styles.container}>
+      <h2>{title}</h2>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        disabled={disabled}
+        className={styles.input}
+      />
+      <button onClick={handleSubmit} disabled={disabled} className={styles.button}>
+        Submit
+      </button>
+    </div>
+  );
+}
+```
+
+**Note**: Component file at `/src/mvp/{feature-name}/src/components/ComponentName/ComponentName.tsx`
+
+### Component Test Template (React Testing Library)
+```typescript
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { ComponentName } from './ComponentName';
+
+describe('ComponentName', () => {
+  it('should render with title', () => {
+    render(<ComponentName title="Test Title" onSubmit={vi.fn()} />);
+    expect(screen.getByText('Test Title')).toBeInTheDocument();
   });
 
-  test('should complete user workflow successfully', async ({ page }) => {
-    // Fill form
-    await page.fill('input[name="salary"]', '60000');
-    await page.selectOption('select[name="kiwisaver"]', '3');
+  it('should call onSubmit when button clicked', async () => {
+    const onSubmit = vi.fn();
+    const user = userEvent.setup();
     
-    // Click button
-    await page.click('button[type="submit"]');
+    render(<ComponentName title="Test" onSubmit={onSubmit} />);
     
-    // Verify loading state appears
-    await expect(page.locator('.spinner-border')).toBeVisible();
+    const input = screen.getByRole('textbox');
+    await user.type(input, 'test value');
     
-    // Verify loading state disappears (critical!)
-    await expect(page.locator('.spinner-border')).toBeHidden({ timeout: 5000 });
+    const button = screen.getByRole('button', { name: /submit/i });
+    await user.click(button);
     
-    // Verify results
-    await expect(page.locator('.results-display')).toBeVisible();
-    await expect(page.locator('.take-home-pay')).toContainText('$3,855.17');
+    expect(onSubmit).toHaveBeenCalledWith('test value');
   });
 
-  test('should show validation errors for invalid input', async ({ page }) => {
-    await page.click('button[type="submit"]');
-    await expect(page.locator('.error-message')).toBeVisible();
+  it('should be disabled when disabled prop is true', () => {
+    render(<ComponentName title="Test" onSubmit={vi.fn()} disabled />);
+    
+    expect(screen.getByRole('textbox')).toBeDisabled();
+    expect(screen.getByRole('button')).toBeDisabled();
   });
 });
 ```
 
-**Note**: Test file at `/src/mvp/{feature-name}/tests/e2e/{feature-name}.spec.js`
+**Note**: Test file at `/src/mvp/{feature-name}/src/components/ComponentName/ComponentName.test.tsx`
 
-### Shared Component Template
-```javascript
-/**
- * LoadingButton - Reusable button with loading state
- * 
- * Attributes:
- * - loading: Boolean - Shows spinner when true
- * - disabled: Boolean - Disables button
- * 
- * Events:
- * - click: Fired when button is clicked (if not disabled)
- * 
- * Usage:
- * <loading-button>Calculate</loading-button>
- */
-export class LoadingButtonElement extends HTMLElement {
-  static get observedAttributes() {
-    return ['loading', 'disabled'];
-  }
+### Shared Component Template (Reusable Button)
+```typescript
+import { ButtonHTMLAttributes, ReactNode } from 'react';
+import styles from './LoadingButton.module.css';
 
-  constructor() {
-    super();
-  }
-
-  connectedCallback() {
-    this.render();
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue !== newValue) {
-      this.render();
-    }
-  }
-
-  get loading() {
-    return this.hasAttribute('loading');
-  }
-
-  set loading(value) {
-    if (value) {
-      this.setAttribute('loading', '');
-    } else {
-      this.removeAttribute('loading');
-    }
-  }
-
-  render() {
-    const disabled = this.hasAttribute('disabled') || this.loading;
-    const buttonText = this.textContent || 'Submit';
-    
-    this.innerHTML = `
-      <button class="btn-primary" ${disabled ? 'disabled' : ''}>
-        <span class="btn-text ${this.loading ? 'hidden' : ''}">${buttonText}</span>
-        <span class="spinner-border ${this.loading ? '' : 'hidden'}"></span>
-      </button>
-    `;
-
-    // Forward click event
-    this.querySelector('button').addEventListener('click', (e) => {
-      if (!disabled) {
-        this.dispatchEvent(new CustomEvent('click', { bubbles: true }));
-      }
-    });
-  }
+interface LoadingButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  loading?: boolean;
+  children: ReactNode;
 }
 
-customElements.define('loading-button', LoadingButtonElement);
+/**
+ * LoadingButton - Reusable button with loading state
+ */
+export function LoadingButton({ loading = false, disabled, children, ...props }: LoadingButtonProps) {
+  return (
+    <button
+      className={styles.button}
+      disabled={disabled || loading}
+      aria-busy={loading}
+      {...props}
+    >
+      {loading ? (
+        <>
+          <span className={styles.spinner} />
+          <span className={styles.hiddenText}>{children}</span>
+        </>
+      ) : (
+        children
+      )}
+    </button>
+  );
+}
 ```
 
-**Note**: Shared component at `/src/mvp/shared/components/loading-button/loading-button.js`
-**Test it**: Create `/src/mvp/shared/components/loading-button/test.html` and test all states with Playwright
+**Note**: Shared component at `/src/mvp/shared/components/LoadingButton/LoadingButton.tsx`
+**Test it**: Create `/src/mvp/shared/components/LoadingButton/LoadingButton.test.tsx`
 
-### Feature Index.html Template
+### Feature Entry Point Template
+**File: `index.html`**
 ```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{Feature Name}</title>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>
+```
+
+**File: `src/main.tsx`**
+```typescript
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { App } from './App';
+import './styles/reset.css';
+import './styles/variables.css';
+import './styles/global.css';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+```
   <title>{Feature Name}</title>
   
   <!-- Global Styles -->
@@ -556,59 +651,56 @@ customElements.define('loading-button', LoadingButtonElement);
 </html>
 ```
 
-### Web Component Template
-```javascript
-/**
- * ComponentName - Brief description
- */
-export class ComponentNameElement extends HTMLElement {
-  constructor() {
-    super();
-    // Initialize state
-  }
+### Custom Hook Template
+```typescript
+import { useState, useEffect } from 'react';
 
-  connectedCallback() {
-    this.render();
-    this.attachEventListeners();
-  }
-
-  disconnectedCallback() {
-    this.removeEventListeners();
-  }
-
-  render() {
-    this.innerHTML = `
-      <div class="component-name">
-        <!-- markup -->
-      </div>
-    `;
-  }
-
-  attachEventListeners() {
-    // Event handlers
-  }
-
-  removeEventListeners() {
-    // Cleanup
-  }
+interface UseCalculatorResult {
+  result: number | null;
+  error: string | null;
+  isLoading: boolean;
+  calculate: (input: number) => void;
 }
 
-customElements.define('component-name', ComponentNameElement);
+/**
+ * Custom hook for calculator logic
+ */
+export function useCalculator(): UseCalculatorResult {
+  const [result, setResult] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const calculate = (input: number) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Business logic
+      const calculated = input * 2; // Example
+      setResult(calculated);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Calculation failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { result, error, isLoading, calculate };
+}
 ```
 
-**Note**: Component file at `/src/mvp/{feature-name}/src/components/component-name/component-name.js`
+**Note**: Hook file at `/src/mvp/{feature-name}/src/hooks/useCalculator.ts`
 
 ### Service Function Template
-```javascript
+```typescript
+import type { TaxCalculation } from '../models';
+
 /**
  * Calculates something based on input
- * @param {number} input - The input value
- * @returns {{result: number, details: string}}
- * @throws {Error} If input is invalid
  */
-export function calculateSomething(input) {
+export function calculateSomething(input: number): TaxCalculation {
   // Validation
-  if (typeof input !== 'number' || input < 0) {
+  if (input < 0) {
     throw new Error('Input must be a non-negative number');
   }
 
@@ -617,23 +709,26 @@ export function calculateSomething(input) {
 
   // Return structured data
   return {
+    input,
     result,
-    details: `Calculated ${result} from ${input}`
+    details: `Calculated ${result} from ${input}`,
+    timestamp: new Date(),
   };
 }
 ```
 
-**Note**: Service file at `/src/mvp/{feature-name}/src/services/example-service.js`
+**Note**: Service file at `/src/mvp/{feature-name}/src/services/exampleService.ts`
 
-### Test Template
-```javascript
+### Test Template (Service Tests)
+```typescript
 import { describe, it, expect } from 'vitest';
-import { calculateSomething } from '../../src/services/example-service.js';
+import { calculateSomething } from './exampleService';
 
 describe('calculateSomething', () => {
   it('should calculate correctly for valid input', () => {
     const result = calculateSomething(100);
     expect(result.result).toBe(/* expected */);
+    expect(result.input).toBe(100);
   });
 
   it('should throw error for invalid input', () => {
@@ -642,7 +737,7 @@ describe('calculateSomething', () => {
 });
 ```
 
-**Note**: Test file at `/src/mvp/{feature-name}/tests/services/example-service.test.js`
+**Note**: Test file at `/src/mvp/{feature-name}/src/services/exampleService.test.ts`
 
 ## Traceability
 
@@ -689,8 +784,9 @@ When completing work, provide:
 4. **Navigation updated**: Confirm `/src/mvp/index.html` was updated (if new feature)
 5. **Requirements satisfied**: Which REQ-XXX were addressed
 6. **Testing performed**: 
+   - Type checking: Passing/Failing
    - Unit tests: X tests, Y passing
-   - Playwright tests: X scenarios tested, Y passing
+   - Component tests: X components tested, Y passing
    - Manual testing: What was verified
 7. **Acceptance criteria**: Which criteria are now met (all should be `[x]` in work item file)
 8. **Work item updated**: Confirm acceptance criteria checkboxes were updated in `/work-items/MVP/WI-XXX-*.md`
@@ -702,20 +798,21 @@ When reporting bugs, provide:
 2. **Severity**: Critical | High | Medium | Low
 3. **Root cause**: Technical explanation
 4. **Solution**: How it was fixed
-5. **Regression test**: Playwright test added to prevent recurrence
+5. **Regression test**: Unit or component test added to prevent recurrence
 6. **Related work item**: Link to original work item
 
 ## Anti-Patterns to Avoid
 
 ❌ **Don't mix concerns:**
-- Business logic in components
-- DOM manipulation in services
-- Styling in JavaScript
+- Business logic in React components (use hooks and services)
+- React dependencies in services (keep services framework-agnostic)
+- Inline styles (use CSS Modules)
 
 ❌ **Don't bypass architecture:**
-- Adding frameworks "just this once"
-- Skipping layer separation "for speed"
+- Using class components instead of functional components
+- Skipping TypeScript types with `any`
 - Hardcoding values instead of using design tokens
+- Not using Vite (trying to use other build tools)
 
 ❌ **Don't ignore specs:**
 - Guessing at requirements
@@ -726,11 +823,12 @@ When reporting bugs, provide:
 - "It works in my browser" without tests
 - Only happy path testing
 - Skipping edge cases
+- Not running type checking
 
 ❌ **Don't create tight coupling:**
-- Components depending on specific DOM structure
-- Services depending on global state
-- Hardcoded dependencies
+- Components depending on specific service implementations
+- Services depending on React state
+- Direct DOM manipulation in React components
 
 ## When to Ask for Clarification
 
@@ -760,7 +858,7 @@ Ask the user (or escalate) when:
 
 3. **Fix the bug**:
    - Follow same workflow as regular work items
-   - Create regression test (Playwright preferred)
+   - Create regression test (unit or component test)
    - Update documentation
    - Mark bug work item complete
 
@@ -771,49 +869,58 @@ Ask the user (or escalate) when:
    - Update agent instructions if pattern should be avoided
 
 ### Common Bug Patterns to Avoid:
-1. **Stuck loading states**: Always use try-finally or ensure cleanup in all code paths
-2. **CSS specificity issues**: Use higher specificity for state modifiers (`.component.state` not `.state`)
-3. **Event listener leaks**: Remove listeners in `disconnectedCallback`
-4. **Uncaught promise rejections**: Always handle async errors
-5. **Missing null checks**: Validate inputs and DOM element existence
+1. **Stuck loading states**: Always use try-finally to ensure loading state is reset
+2. **Missing TypeScript types**: Use strict types, avoid `any`
+3. **Memory leaks**: Clean up effects with return functions in useEffect
+4. **Stale closures**: Be aware of closure scope in useEffect and useCallback
+5. **Missing error boundaries**: Wrap components that might throw in ErrorBoundary
 
 ## Feature Setup Checklist
 
 When starting work on a new feature (first work item after WI-001):
 - [ ] Read master work item to extract feature name
 - [ ] Create feature folder: `/src/mvp/{feature-name}/`
+- [ ] Initialize Vite project: `npm create vite@latest . -- --template react-ts`
+- [ ] Configure `package.json` with scripts (dev, build, test, type-check, lint)
+- [ ] Set up `tsconfig.json` with strict mode and path aliases
+- [ ] Configure `vite.config.ts` with React plugin and aliases
 - [ ] Create feature `index.html` with proper structure
 - [ ] Create feature `README.md` with overview
-- [ ] Create folder structure: `src/`, `src/components/`, `src/components/shared/`, `src/services/`, `src/models/`, `src/styles/`, `tests/`, `tests/e2e/`, `tests/components/`, `assets/`
-- [ ] Create `src/app.js` for feature initialization
-- [ ] Create base styles in `src/styles/`: variables.css, reset.css, typography.css, utilities.css
+- [ ] Create folder structure in `src/`: `components/`, `services/`, `models/`, `hooks/`, `context/`, `utils/`, `styles/`, `assets/`
+- [ ] Create `src/main.tsx` as entry point
+- [ ] Create `src/App.tsx` as root component
+- [ ] Set up global styles in `src/styles/`: `variables.css`, `reset.css`, `global.css`
 - [ ] Update `/src/mvp/index.html` navigation with feature link
-- [ ] Install Playwright: `npm install -D @playwright/test` (if not already installed)
-- [ ] Create Playwright config if needed: `npx playwright install`
-- [ ] Verify feature loads at `/src/mvp/{feature-name}/index.html`
+- [ ] Install dependencies: `npm install`
+- [ ] Verify dev server works: `npm run dev`
+- [ ] Verify type checking works: `npm run type-check`
 
 ## Testing Setup Checklist
 
 Before marking any feature complete:
+- [ ] TypeScript strict mode enabled in `tsconfig.json`
+- [ ] Type checking passing: `npm run type-check`
 - [ ] Unit tests written for all services
 - [ ] Unit tests passing: `npm test`
-- [ ] Playwright tests written for user workflows
-- [ ] Playwright tests passing: `npx playwright test`
+- [ ] Component tests written with React Testing Library
+- [ ] Component tests passing: `npm test`
 - [ ] Shared components tested in isolation
-- [ ] Loading states verified (appear AND disappear)
-- [ ] Error states tested
+- [ ] Loading states verified (appear AND disappear correctly)
+- [ ] Error states tested with error boundaries
 - [ ] Edge cases from spec tested
-- [ ] Manual testing completed in browser
+- [ ] Manual testing completed in browser (dev server)
 - [ ] Responsive design verified (mobile + desktop)
-- [ ] Accessibility verified (keyboard nav, screen reader, contrast)
+- [ ] Accessibility verified (keyboard nav, ARIA, contrast)
+- [ ] Test coverage meets goals: `npm run test:coverage`
 - [ ] **Work item acceptance criteria updated**: All `[ ]` changed to `[x]` for passing criteria
 
 ## Remember
 
-You are building an **MVP** - focus on:
+You are building an **MVP** with **React + TypeScript + Vite** - focus on:
 - ✅ Core functionality working correctly
 - ✅ Clean, maintainable code following specs
-- ✅ Testable business logic
+- ✅ Type-safe business logic
+- ✅ Testable components and services
 - ✅ Consistent UX from design system
 - ✅ Rapid iteration and validation
 
@@ -821,7 +928,7 @@ Not building:
 - ❌ Perfect abstraction layers
 - ❌ Feature-complete production system
 - ❌ Premature optimization
-- ❌ Complex state management
+- ❌ Complex state management (Redux, MobX)
 - ❌ Backend infrastructure
 
-Keep it simple, follow the specs, and build incrementally.
+Keep it simple, use React hooks and Context, follow the specs, and build incrementally.

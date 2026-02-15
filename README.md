@@ -4,7 +4,22 @@ This repository contains a client-side PAYE calculator MVP for New Zealand incom
 
 ## Try it
 
-1. Start a static server from the repository root:
+Option 1: Vite dev server (recommended)
+
+```bash
+npm install
+npm run dev
+```
+
+Open the app:
+
+```
+http://localhost:3000/src/mvp/paye-calculator/index.html
+```
+
+Option 2: Static server
+
+Start a static server from the repository root:
 
 ```bash
 python -m http.server 8000
@@ -28,6 +43,12 @@ http://localhost:8000/src/mvp/index.html
 npm install
 npm test
 ```
+
+## ACC Configuration
+
+Defaults live in `src/mvp/paye-calculator/src/services/acc-config.js`.
+
+The functional spec contains inconsistent ACC values. Update the config once authoritative values are confirmed.
 
 ## Deployment
 
