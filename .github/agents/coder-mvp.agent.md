@@ -1,7 +1,7 @@
 ---
 name: "coder-mvp"
 description: "Specialist coder agent that implements MVP work items following architecture and UX design specifications."
-model: Claude Sonnet 4.5
+model: GPT-5.2-Codex (copilot)
 tools: [read, edit, search, todo, terminal]
 ---
 
