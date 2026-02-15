@@ -72,6 +72,11 @@ Read the assigned functional specification (e.g., `/specs/functional/{feature}.s
 - Identify examples, edge cases, and acceptance criteria
 - Understand dependencies on other features or systems
 - Look for architectural hints (backend needed, static only, etc.)
+- **Extract test scenarios**: Identify both positive and negative test cases
+  - Positive tests: Valid inputs, happy path scenarios, expected use cases
+  - Negative tests: Invalid inputs, error conditions, boundary values, edge cases
+  - Data permutations: Different combinations of valid/invalid inputs
+  - State transitions: Different sequences of operations
 
 ### Step 4: Analyze Specification History
 Use git commit history tools to:
@@ -88,7 +93,7 @@ Based on the architecture specification you read in Step 2, decompose the functi
 - **Services**: Business logic (testable pure functions)
 - **Models**: Data structures and validation
 - **Styles**: CSS architecture and theming
-- **Testing**: Unit tests for services and utilities
+- **Testing**: Unit tests for services and utilities (include positive and negative test scenarios)
 - **Documentation**: README and component docs
 - **Deployment**: Static hosting setup
 
@@ -100,7 +105,7 @@ Based on the architecture specification you read in Step 2, decompose the functi
 - **Views**: Blazor razor components
 - **ViewModels**: MVVM presentation logic
 - **Models**: Client-side DTOs
-- **Testing**: Unit, integration, E2E tests
+- **Testing**: Unit, integration, E2E tests (include positive and negative test scenarios)
 - **Infrastructure-Code**: Bicep templates
 - **Documentation**: API docs, architecture diagrams
 - **DevOps**: CI/CD pipeline setup
@@ -174,6 +179,26 @@ Parent: {WI-001 if this is a layer-specific work item}
 - [ ] {acceptance criterion 1}
 - [ ] {acceptance criterion 2}
 - [ ] {acceptance criterion 3}
+
+## Test Permutations
+**Positive Tests** (Happy Path):
+- [ ] {test case with valid inputs and expected behavior}
+- [ ] {test case for normal user workflow}
+- [ ] {test case for common scenario}
+
+**Negative Tests** (Error Handling):
+- [ ] {test case with invalid input - expected error message}
+- [ ] {test case for boundary condition - expected handling}
+- [ ] {test case for edge case - expected behavior}
+
+**Data Permutations**:
+- [ ] {test case with combination of valid/invalid inputs}
+- [ ] {test case with minimum/maximum values}
+- [ ] {test case with empty/null values}
+
+**State/Sequence Tests**:
+- [ ] {test case for different order of operations}
+- [ ] {test case for state transitions}
 
 ## Technical Notes
 {Any architecture-specific guidance, patterns to follow, or constraints from architecture spec}
@@ -276,6 +301,10 @@ Architecture: {MVP|Full}
 8. **Update on spec changes** - When specs change, update affected work items and create new ones if needed
 9. **Cross-reference** - Link related work items bidirectionally (parent/child, dependencies)
 10. **Document migration path** - For MVP projects, always note when and how to migrate to Full architecture
+11. **Identify comprehensive test scenarios** - Extract both positive and negative test cases from functional specs
+12. **Include test permutations** - Document data combinations, boundary conditions, and edge cases
+13. **Plan for error scenarios** - Ensure negative tests cover invalid inputs, error states, and failure modes
+14. **Consider state transitions** - Test different sequences and order of operations
 
 ## Examples of Layer Separation
 
@@ -312,7 +341,13 @@ Based on the layered architecture defined in the architecture specs, here are ex
 - Separate business logic into testable services
 - Use client-side storage (localStorage) for persistence
 - Include static deployment strategy (GitHub Pages, Netlify)
-- Plan for testing with Vitest/Jest
+- Plan for testing with Vitest/Jest and Playwright
+- **Include comprehensive test permutations**:
+  - Positive tests for valid workflows
+  - Negative tests for invalid inputs and error states
+  - Boundary value tests (min/max, empty, null)
+  - UI state tests (loading, disabled, error, success)
+  - User interaction sequences
 - Document migration path to Full architecture
 
 ### Full Architecture Work Items Should:
@@ -323,6 +358,130 @@ Based on the layered architecture defined in the architecture specs, here are ex
 - Include Bicep infrastructure templates
 - Plan for Azure Container Apps deployment
 - Include CI/CD pipeline setup with GitHub Actions
+- **Include comprehensive test permutations**:
+  - Unit tests for business logic (positive and negative cases)
+  - Integration tests for data access and external services
+  - API tests (valid/invalid requests, error responses)
+  - End-to-end tests for complete workflows
+  - Security tests (authentication, authorization failures)
+  - Performance and load tests for critical paths
+
+## Testing Work Item Template
+
+The Testing work item (e.g., WI-006) requires special attention to test permutations:
+
+```markdown
+# WI-XXX: Testing - {Feature Name}
+Date: {YYYY-MM-DD}
+Source: {source spec file path} (Version {version})
+Architecture: {MVP|Full}
+Layer: Testing
+Parent: WI-001
+
+As a developer, I want comprehensive test coverage so that the feature is reliable and handles all scenarios correctly.
+
+## Scope
+Create unit tests, integration tests, and end-to-end tests covering all positive and negative scenarios for the {feature name}.
+
+## Requirements Mapping
+{List of REQ-XXX that testing validates}
+
+## Positive Test Scenarios (Happy Path)
+**Valid Input Tests:**
+- [ ] Test with typical valid input values
+- [ ] Test with minimum valid values
+- [ ] Test with maximum valid values
+- [ ] Test successful workflow from start to finish
+
+**Normal User Workflows:**
+- [ ] Test common user journey
+- [ ] Test typical data combinations
+- [ ] Test expected state transitions
+
+## Negative Test Scenarios (Error Handling)
+**Invalid Input Tests:**
+- [ ] Test with empty/null values
+- [ ] Test with negative numbers (if not allowed)
+- [ ] Test with values below minimum
+- [ ] Test with values above maximum
+- [ ] Test with invalid data types
+- [ ] Test with malformed data
+
+**Boundary Condition Tests:**
+- [ ] Test at exact minimum boundary
+- [ ] Test at exact maximum boundary
+- [ ] Test one below minimum
+- [ ] Test one above maximum
+- [ ] Test with zero (if applicable)
+
+**Error State Tests:**
+- [ ] Test network failures (if applicable)
+- [ ] Test timeout scenarios
+- [ ] Test concurrent operations
+- [ ] Test race conditions
+- [ ] Test with missing dependencies
+
+**UI State Tests (for frontend):**
+- [ ] Test loading states appear and disappear correctly
+- [ ] Test disabled states prevent interaction
+- [ ] Test error messages display correctly
+- [ ] Test validation feedback is clear
+- [ ] Test accessibility in error states
+
+## Data Permutation Tests
+**Combination Tests:**
+- [ ] Test valid input A + valid input B
+- [ ] Test valid input A + invalid input B
+- [ ] Test invalid input A + valid input B
+- [ ] Test invalid input A + invalid input B
+
+**Edge Case Combinations:**
+- [ ] {specific combinations from functional spec}
+- [ ] {boundary value combinations}
+- [ ] {unusual but valid scenarios}
+
+## State Transition Tests
+**Sequence Tests:**
+- [ ] Test operations in expected order
+- [ ] Test operations in reverse order
+- [ ] Test operations in random order
+- [ ] Test repeat operations
+- [ ] Test cancel/undo operations
+
+## Tasks
+- [ ] Set up test framework ({Vitest/Jest/xUnit/Playwright})
+- [ ] Create test fixtures and mock data for all scenarios
+- [ ] Implement positive test cases
+- [ ] Implement negative test cases
+- [ ] Implement boundary and edge case tests
+- [ ] Implement data permutation tests
+- [ ] Implement state transition tests
+- [ ] Configure test coverage reporting
+- [ ] Document test scenarios and rationale
+
+## Dependencies
+- Depends on: WI-003 (Services/Application logic must exist)
+- Depends on: WI-004 (Models must be defined)
+- Depends on: WI-002 (Components/Domain to be testable)
+
+## Acceptance Criteria
+- [ ] All positive test scenarios passing
+- [ ] All negative test scenarios passing (errors handled correctly)
+- [ ] All boundary conditions tested
+- [ ] All data permutations tested
+- [ ] All state transitions tested
+- [ ] Test coverage > 80% for business logic
+- [ ] Test coverage > 60% for UI components
+- [ ] All tests documented with clear descriptions
+- [ ] Tests run in CI/CD pipeline
+- [ ] Test failures provide clear diagnostic information
+
+## Technical Notes
+{Reference architecture spec testing guidelines}
+{Note specific testing patterns or frameworks to use}
+{Document any test data requirements}
+{List any mocking strategies needed}
+```
 
 ## Output Summary
 
@@ -332,6 +491,7 @@ After creating work items, provide a summary:
 - **Total number of work items created**
 - **List of work item files created** (with layer names)
 - **Dependency order for implementation**
+- **Test permutations identified**: Summary of positive, negative, and edge case scenarios
 - **Any architectural concerns or questions**
 - **Migration considerations** (if MVP, when to consider Full architecture)
 - **Suggested next step** (e.g., "Ready for frontend developer to start WI-002" or "Ready for backend engineer to start WI-002")
@@ -362,6 +522,12 @@ Implementation Order:
 5. WI-006 (Testing - depends on Services)
 6. WI-007 (Documentation)
 7. WI-008 (Deployment)
+
+Test Permutations Identified:
+- Positive: 12 happy path scenarios for valid salary inputs and KiwiSaver rates
+- Negative: 8 error scenarios (invalid inputs, boundary violations, null values)
+- Boundary: 6 edge cases (min/max salary, 0% and 10% KiwiSaver rates)
+- UI States: 5 interaction tests (loading, disabled, error display, validation feedback)
 
 Migration Path: Consider migrating to Full architecture when backend persistence or multi-user features are needed.
 
@@ -398,6 +564,14 @@ Implementation Order:
 8. WI-009 (Testing - depends on all layers)
 9. WI-010 (Infrastructure-Code - can be early or parallel)
 10. WI-011 (Documentation)
+
+Test Permutations Identified:
+- Positive: 15 happy path scenarios across domain logic, API endpoints, and UI flows
+- Negative: 12 error scenarios (validation failures, unauthorized access, database errors)
+- Integration: 8 scenarios testing cross-layer interactions
+- API: 10 scenarios for request/response handling (valid/invalid payloads, status codes)
+- E2E: 6 complete workflow tests from UI to database
+- Security: 4 authentication/authorization failure scenarios
 
 Next Step: Ready for backend engineer to start WI-002 (Domain)
 ```
