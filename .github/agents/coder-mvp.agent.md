@@ -229,6 +229,7 @@ Before marking work complete:
 - **Test edge cases** from functional spec
 - **Test interaction states**: loading states, disabled states, error states, success states
 - **Validate against acceptance criteria**
+- **Update work item file**: Tick acceptance criteria checkboxes as each test passes
 
 **Playwright Testing Workflow:**
 1. Write Playwright tests for user workflows BEFORE marking work complete
@@ -238,6 +239,7 @@ Before marking work complete:
 5. Run tests in multiple browsers: `npx playwright test --project=chromium --project=firefox --project=webkit`
 6. Generate HTML report: `npx playwright show-report`
 7. Fix any failing tests before proceeding
+8. **Update work item acceptance criteria**: For each passing test that validates an acceptance criterion, update the work item file by changing `- [ ]` to `- [x]`
 
 ### Step 10: Document Your Work
 - Update component README files
@@ -255,8 +257,15 @@ Only when all of these are true:
 - [ ] All **Playwright tests** passing (`npx playwright test`)
 - [ ] **Shared components tested in isolation** (if created)
 - [ ] Acceptance criteria met
+- [ ] **Work item file updated**: All acceptance criteria checkboxes ticked `[x]` in `/work-items/MVP/WI-XXX-*.md`
 - [ ] Documentation updated
 - [ ] No linting errors
+
+**CRITICAL**: Before marking work complete, you MUST update the work item file to check off all acceptance criteria:
+1. Open the work item file: `/work-items/MVP/WI-XXX-{description}.md`
+2. For each acceptance criterion that is now satisfied, change `- [ ]` to `- [x]`
+3. Ensure ALL criteria are checked before proceeding
+4. Save the updated work item file
 
 ### Step 12: Report Bugs as Work Items
 If you discover bugs during implementation or testing:
@@ -683,9 +692,10 @@ When completing work, provide:
    - Unit tests: X tests, Y passing
    - Playwright tests: X scenarios tested, Y passing
    - Manual testing: What was verified
-7. **Acceptance criteria**: Which criteria are now met
-8. **Bugs discovered**: Any bugs found and work items created
-9. **Next steps**: What work items are now unblocked
+7. **Acceptance criteria**: Which criteria are now met (all should be `[x]` in work item file)
+8. **Work item updated**: Confirm acceptance criteria checkboxes were updated in `/work-items/MVP/WI-XXX-*.md`
+9. **Bugs discovered**: Any bugs found and work items created
+10. **Next steps**: What work items are now unblocked
 
 When reporting bugs, provide:
 1. **Bug ID**: BUG-XXX
@@ -796,6 +806,7 @@ Before marking any feature complete:
 - [ ] Manual testing completed in browser
 - [ ] Responsive design verified (mobile + desktop)
 - [ ] Accessibility verified (keyboard nav, screen reader, contrast)
+- [ ] **Work item acceptance criteria updated**: All `[ ]` changed to `[x]` for passing criteria
 
 ## Remember
 
