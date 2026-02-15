@@ -8,12 +8,14 @@ A calculator that computes New Zealand PAYE (Pay As You Earn) tax, KiwiSaver con
 
 ### Tax Calculations
 
-#### PAYE Tax Rates (2024/2025)
-- $0 - $14,000: 10.5%
-- $14,001 - $48,000: 17.5%
-- $48,001 - $70,000: 30%
-- $70,001 - $180,000: 33%
-- Over $180,000: 39%
+#### PAYE Tax Rates (2025/2026)
+
+Income	Tax Rate
+- $0 - $15,600: 10.5%
+- $15,601 - $53,500: 17.5%
+- $53,501 - $78,100: 30%
+- $78,101 - $180,000: 33%
+- $180,001 + 39%
 
 #### KiwiSaver
 - Employee contribution: 0%, 3%, 5% of gross salary
@@ -24,7 +26,7 @@ A calculator that computes New Zealand PAYE (Pay As You Earn) tax, KiwiSaver con
 ### Calculations
 1. Calculate annual PAYE tax using progressive tax brackets
 2. Calculate annual KiwiSaver contribution (3% of gross salary)
-3. Calculate annual ACC levy (1.53% of gross salary, capped at maximum earnings)
+3. Calculate annual ACC levy (1.67% of gross salary, capped at maximum earnings of $152,790)
 4. Calculate annual take-home pay = Annual Salary - PAYE - KiwiSaver - ACC
 5. Divide all amounts by 12 to get monthly figures
 
@@ -39,8 +41,8 @@ The calculator should display:
 ### Example
 For an annual salary of $60,000:
 - Monthly Gross: $5,000.00
-- Monthly PAYE: ~$858.33
+- Monthly PAYE: ~$808.38
 - Monthly KiwiSaver: $150.00
-- Monthly ACC: $76.50
-- Monthly Take-Home: ~$3,915.17
+- Monthly ACC: $83.50
+- Monthly Take-Home: ~$3,958.12
 
