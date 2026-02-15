@@ -7,6 +7,7 @@ This repository contains a client-side PAYE calculator MVP for New Zealand incom
 Option 1: Vite dev server (recommended)
 
 ```bash
+cd src/mvp/paye-calculator
 npm install
 npm run dev
 ```
@@ -14,7 +15,7 @@ npm run dev
 Open the app:
 
 ```
-http://localhost:3000/src/mvp/paye-calculator/index.html
+http://localhost:3000
 ```
 
 Option 2: Static server
@@ -25,7 +26,7 @@ Start a static server from the repository root:
 python -m http.server 8000
 ```
 
-2. Open the app:
+Open the app:
 
 ```
 http://localhost:8000/src/mvp/paye-calculator/index.html
@@ -40,21 +41,23 @@ http://localhost:8000/src/mvp/index.html
 ## Tests
 
 ```bash
-npm install
+cd src/mvp/paye-calculator
 npm test
+npm run test:coverage
+npm run test:e2e
 ```
 
 ## ACC Configuration
 
-Defaults live in `src/mvp/paye-calculator/src/services/acc-config.js`.
+Defaults live in `src/mvp/paye-calculator/src/services/payeService.ts` (`ACC_RATE`, `ACC_CAP`).
 
-The functional spec contains inconsistent ACC values. Update the config once authoritative values are confirmed.
+The functional spec contains inconsistent ACC values. This MVP uses the 1.53% rate with the $139,384 cap. Update these constants once authoritative values are confirmed.
 
 ## Deployment
 
-GitHub Pages deployment is configured via [deploy workflow](.github/workflows/deploy.yml). Push to `main` to publish.
+GitHub Pages deployment is configured via [deploy workflow](.github/workflows/deploy-paye-calculator.yml). Push to `main` to publish.
 
-For manual static hosting (Netlify, etc.), deploy the repository root as a static site.
+For manual static hosting (Netlify, etc.), deploy the `src/mvp/paye-calculator/dist` output after running `npm run build` in the feature directory.
 
 ## Specification
 
